@@ -1,7 +1,10 @@
+// components/Header.tsx
 "use client";
 
 import React from "react";
-import { Plus, Download, RotateCcw } from "lucide-react";
+import { Plus, Download, RotateCcw, LogOut, User } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
+import Link from "next/link";
 
 interface HeaderProps {
   onOpenNewTask: () => void;
@@ -9,9 +12,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onOpenNewTask, onOpenReset }: HeaderProps) {
-  const handleExport = () => {
-    window.print();
-  };
+  const { data: session } = useSession();
 
   return (
     <header className="border-b border-mono-200 bg-white sticky top-0 z-30 no-print">
@@ -43,20 +44,44 @@ export default function Header({ onOpenNewTask, onOpenReset }: HeaderProps) {
           </button>
 
           <button
-            onClick={handleExport}
+            onClick={() => window.print()}
             className="inline-flex items-center px-3.5 py-1.5 rounded-md border border-mono-300 bg-white text-mono-900 text-xs font-medium hover:bg-mono-50 hover:border-mono-400 transition shadow-sm active:scale-95"
           >
             <Download className="w-3.5 h-3.5 mr-1.5" />
-            <span>Export / Print</span>
+            <span className="hidden sm:inline">Export / Print</span>
           </button>
 
           <button
             onClick={onOpenReset}
-            title="Reset to sample data"
+            title="Reset sample data"
             className="p-1.5 rounded-md text-mono-400 hover:text-mono-900 hover:bg-mono-100 transition"
           >
             <RotateCcw className="w-4 h-4" />
           </button>
+
+          {/* Auth State Button */}
+          {session?.user ? (
+            <div className="flex items-center pl-2 border-l border-mono-200 space-x-2">
+              <span className="text-xs font-medium text-mono-700 hidden md:inline">
+                {session.user.name}
+              </span>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                title="Log out"
+                className="p-1.5 rounded-md text-mono-500 hover:text-mono-950 hover:bg-mono-100 transition flex items-center gap-1 text-xs"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-mono-300 text-mono-900 text-xs font-medium hover:bg-mono-100 transition"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Login</span>
+            </Link>
+          )}
         </div>
       </div>
     </header>
